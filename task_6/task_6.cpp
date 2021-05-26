@@ -80,7 +80,7 @@ void delete_item(Item*** items, int* size, int idx) {
 		*(*items + i) = *(*items + i + 1);
 	}
 	(*size)--;
-	delete (**items + *size);
+	*(*items + *size) = nullptr;
 	
 }
 
