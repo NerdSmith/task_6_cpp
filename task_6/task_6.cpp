@@ -75,6 +75,7 @@ void expand_size(Item*** items, int* max_size) {
 }
 
 void delete_item(Item*** items, int* size, int idx) {
+	delete (*(*items + idx));
 	for (int i = idx; i < *size - 1; i++)
 	{
 		*(*items + i) = *(*items + i + 1);
