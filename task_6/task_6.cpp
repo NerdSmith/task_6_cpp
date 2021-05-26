@@ -1,9 +1,7 @@
-#include "stdafx.h"
-
-
 #include <iostream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 enum color { red, blue, black };
 
@@ -37,10 +35,10 @@ struct List {
 
 void print(Item* item, int nb) {
 	if (item->id == 0) {
-		std::cout << "____________________________\n";
-		std::cout << "| # | TITLE | ISBN | Pages |\n";
-		std::cout << "| " << nb << " | " << item->book.title << " | " << item->book.isbn << " | " << item->book.pages << " | \n";
-		std::cout << "____________________________\n";
+		std::cout << std::setw(86) << std::left << std::setfill('_') << "_" << std::endl;
+		std::cout << std::setfill(' ') << "| " << std::setw(5) << "#" << " | " << std::setw(50) << "TITLE" << " | " << std::setw(13) << "ISBN" << " | " << std::setw(5) << "Pages" << " |" << std::endl;
+		std::cout << std::setfill(' ') << "| " << std::setw(5) << nb << " | " << std::setw(50) << item->book.title << " | " << std::setw(13) << item->book.isbn << " | " << std::setw(5) << item->book.pages << " |" << std::endl;
+		std::cout << std::setfill('_') << std::setw(86) << std::setfill('_') << "_" << std::endl;
 	}
 	else if (item->id == 1) {
 		std::string color;
@@ -56,51 +54,50 @@ void print(Item* item, int nb) {
 			color = "black";
 			break;
 		default:
+			color = "unknown";
 			break;
 		}
-		std::cout << "________________________\n";
-		std::cout << "| # | Rigidity | Color |\n";
-		std::cout << "| " << nb << " | " << item->pencil.rigidity << " | " << color << " | \n";
-		std::cout << "________________________\n";
+		std::cout << std::setw(33) << std::left << std::setfill('_') << "_" << std::endl;
+		std::cout << std::setfill(' ') << "| " << std::setw(5) << "#" << " | " << std::setw(8) << "Rigidity" << " | " << std::setw(10) << "Color" << " |" << std::endl;
+		std::cout << std::setfill(' ') << "| " << std::setw(5) << nb << " | " << std::setw(8) << item->pencil.rigidity << " | " << std::setw(10) << color << " |" << std::endl;
+		std::cout << std::setw(33) << std::left << std::setfill('_') << "_" << std::endl;
 	}
 }
 
 void expand_size(Item*** items, int* max_size) {
 	*max_size = *max_size * 2;
-	Item** new_arr = new Item*[*max_size];
+	Item** new_arr = new Item* [*max_size];
 	for (int i = 0; i < *max_size / 2; i++) {
-		*(*new_arr + i) = *(**items + i);
+		*(new_arr + i) = *(*items + i);
 	}
-	delete[](**items);
-	**items = *new_arr;
+	delete[] (*items);
+	*items = new_arr;
 }
 
 void delete_item(Item*** items, int* size, int idx) {
 	for (int i = idx; i < *size - 1; i++)
 	{
-		*(**items + i) = *(**items + i + 1);
+		*(*items + i) = *(*items + i + 1);
 	}
-	*(**items + *size - 1) = NULL;
 	(*size)--;
+	delete (**items + *size);
+	
 }
 
-Item* create_new_item(int* size) {
-	Item *new_item;
+Item* create_new_item() {
 	int id;
 	std::cout << "Enter the item type (0 for books, 1 for pencils): ";
 	std::cin >> id;
-	new_item = new Item(id);
+	Item* new_item = new Item(id);
 
 	std::string color_s;
 	if (new_item->id == 0) {
 		std::cout << "Enter title, ISBN and number of pages of book: ";
 		std::cin >> new_item->book.title >> new_item->book.isbn >> new_item->book.pages;
-		(*size)++;
 	}
 	else if (new_item->id == 1) {
 		std::cout << "Enter rigidity and color of pencil: ";
 		std::cin >> new_item->pencil.rigidity >> color_s;
-		(*size)++;
 		if (color_s == "red") {
 			new_item->pencil.color = red;
 		}
@@ -118,10 +115,11 @@ Item* create_new_item(int* size) {
 void controller() {
 	std::string command;
 	bool flag = 1;
-	std::vector<Item*> items;
 
-	int max_size = 10;
+	int max_size = 1;
 	Item** _items = new Item* [max_size];
+	Item* new_item = nullptr;
+	Item* item = nullptr;
 	int size = 0;
 
 	while (flag) {
@@ -141,14 +139,8 @@ void controller() {
 				std::cin >> id;
 			}
 			if (id != -2) {
-				//for (Item* item : items) {
-				//	if ((item->id == id) || (id == -1)) {
-				//		print(item, counter);
-				//		counter++;
-				//	}
-				//}
 				for (int i = 0; i < size; i++) {
-					Item* item = *(_items + i);
+					item = *(_items + i);
 					if ((item->id == id) || (id == -1)) {
 						print(item, counter);
 						counter++;
@@ -158,19 +150,17 @@ void controller() {
 			}
 		}
 		else if (command == "INSERT") {
-			//items.push_back(create_new_item());
-			if (max_size = size) {
-				//if equals - expand
+			if (max_size == size) {
 				expand_size(&_items, &max_size);
 			}
-			*(_items + size) = create_new_item(&size);
+			*(_items + size) = create_new_item();
+			size++;
 		}
 		else if (command == "DELETE") {
 			int idx;
 			std::cout << "Enter index: ";
 			std::cin >> idx;
-			if ((idx >= 0) && (idx < items.size())) {
-				//items.erase(items.begin() + idx);
+			if ((idx >= 0) && (idx < size)) {
 				delete_item(&_items, &size, idx);
 			}
 		}
